@@ -1,0 +1,104 @@
+Sub Stock_Analysis_over_Time()
+
+    'Begin loop for multiple worksheets
+    For Each WS In Worksheets
+        ''set and define parameters
+        'define variables
+        Dim Ticker As String
+        Dim Yearly_Change As Double
+        Dim Percent_Change As Double
+        Dim Total_Stock_Volume As Double
+        Dim Stock_Open As Double
+        Dim Stock_Close As Double
+        Dim LastRow As Double
+
+        'Start Count of values at 0
+        Total_Stock_Volume = 0
+
+        'Set Given Data Variable count to 0
+        Stock_Open = 0
+        Stock_Close = 0
+        Yearly_Change = 0
+        Percent_Change = 0
+
+        'label Headers for summary table
+        Range("J1").Value = "Yearly_Change"
+        Range("K1").Value = "Percent Change"
+        Range("L1").Value = "Total_Stock_Volume"
+
+        'Determine and call last row
+        LastRow = WS.Cells(Rows.Count, 1).End(xlUp).row
+
+        'Establish rowcount location
+        Dim row As Double
+        row = 2
+        'Distinguish variable range
+        For i = 2 To LastRow
+
+            'Distinguish between tickers and move ticker to summary table
+            If WS.Cells(i + 1, 1).Value <> WS.Cells(i, 1).Value Then
+                Ticker = WS.Cells(i, 1).Value
+                WS.Cells(row, 9).Value = WS.Cells(i, 1).Value
+
+            End If
+
+            'pull stock open price
+            Stock_Close = WS.Cells(i, 6).Value
+            'conditional for stock open for percent change
+            If WS.Cells(i, 1).Value <> WS.Cells(i - 1, 1).Value Then
+                Stock_Open = WS.Cells(i, 3).Value
+
+                'calculate total Stock Volume
+                Total_Stock_Volume = Total_Stock_Volume + WS.Cells(i, 7)
+
+                'Create if statement for looping/calculating
+                If Stock_Open = 0 Then
+                    Yearly_Change = 0
+                    Percent_Change = 0
+
+                Else
+                    'calculate Yearly change
+                    Yearly_Change = Stock_Close - Stock_Open
+                    'calculate percent change
+                    Percent_Change = (Stock_Close - Stock_Open) / Stock_Open
+                End If
+
+                'printing yearly and percent change
+                WS.Range("J" & row).Value = Yearly_Change
+                WS.Range("K" & row).Value = Percent_Change
+                WS.Cells(row, 11).NumberFormat = "0.00%"
+
+                'Conditional to format to highlight positive or negative change.
+                If Yearly_Change >= 0 Then
+                    WS.Cells(row, 10).Interior.ColorIndex = 4
+                Else
+                    WS.Cells(row, 10).Interior.ColorIndex = 3
+                End If
+                If Stock_Open = 0 And Stock_Close = 0 Then
+                    'Indivisible Calculation
+                    Percent_Change = 0
+                    WS.Cells(row, 11).Value = Percent_Change
+                    WS.Cells(row, 11).NumberFormat = "0.00%"
+                ElseIf year_open = 0 Then
+
+                    'Calculation of price increase by dollar amount for stocks beggining at 0.
+                    'Deem "Initial Stock" as percent change.
+                    Dim percent_change_NA As String
+                    percent_change_NA = "Initial Stock"
+                    WS.Cells(row, 11).Value = Percent_Change
+                Else
+                    Percent_Change = year_change / year_open
+                    WS.Cells(rowcount, 11).Value = Percent_Change
+                    WS.Cells(rowcount, 11).NumberFormat = "0.00%"
+                End If
+                'Add 1 to row to move it to the next empty row in the summary table
+                row = row + 1
+                'Reset total stock volume, Stock_Open_Price, Stock_Close_Price, year_change, year
+            End If
+
+        Next i
+
+        WS.Columns("I:L").EntireColumn.AutoFit
+        WS.Columns("O:Q").EntireColumn.AutoFit
+    Next WS
+End Sub
