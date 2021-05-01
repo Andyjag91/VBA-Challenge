@@ -1,104 +1,100 @@
-Sub Stock_Analysis_over_Time()
+Sub Anual_Stock_Analysis()
+    
+    'Declare worksheet and begin for statement for loop through ws
+    Dim ws As Worksheet
+    For Each ws In Worksheets
 
-    'Begin loop for multiple worksheets
-    For Each WS In Worksheets
-        ''set and define parameters
-        'define variables
-        Dim Ticker As String
-        Dim Yearly_Change As Double
-        Dim Percent_Change As Double
-        Dim Total_Stock_Volume As Double
-        Dim Stock_Open As Double
-        Dim Stock_Close As Double
-        Dim LastRow As Double
+        'Declare Variables with numeric classes
+        Dim total_volume As Double
+        Dim sum_table As Integer
+        Dim open_date As Double
+        Dim close_date As Double
+        Dim anual_change As Double
+        Dim percent_change As Double
+        Dim last_row As Long
+        Dim new_stock As String
+        
+        'Initiate starting values
+        last_row = ws.Cells(Rows.Count, 1).End(xlUp).Row
+        total_volume = 0
+        sum_table = 2
+        open_date = 0
+        close_date = 0
+        yearly_change = 0
+        percent_change = 0
+        
+        
+        'Declare columns for sum_table
+        ws.Cells(1, 9).Value = "Ticker"
+        ws.Cells(1, 10).Value = "Yearly_Change"
+        ws.Cells(1, 11).Value = "Percent_change"
+        ws.Cells(1, 12).Value = "Total_Stock_Volume"
 
-        'Start Count of values at 0
-        Total_Stock_Volume = 0
 
-        'Set Given Data Variable count to 0
-        Stock_Open = 0
-        Stock_Close = 0
-        Yearly_Change = 0
-        Percent_Change = 0
-
-        'label Headers for summary table
-        Range("J1").Value = "Yearly_Change"
-        Range("K1").Value = "Percent Change"
-        Range("L1").Value = "Total_Stock_Volume"
-
-        'Determine and call last row
-        LastRow = WS.Cells(Rows.Count, 1).End(xlUp).row
-
-        'Establish rowcount location
-        Dim row As Double
-        row = 2
-        'Distinguish variable range
-        For i = 2 To LastRow
-
-            'Distinguish between tickers and move ticker to summary table
-            If WS.Cells(i + 1, 1).Value <> WS.Cells(i, 1).Value Then
-                Ticker = WS.Cells(i, 1).Value
-                WS.Cells(row, 9).Value = WS.Cells(i, 1).Value
-
+        'Declare beginning and end rows for loop to run through
+        For i = 2 To last_row
+            
+            'Conditional statement to pull opening value
+            If ws.Cells(i - 1, 1).Value <> ws.Cells(i, 1).Value Then
+                open_date = ws.Cells(i, 3).Value
             End If
 
-            'pull stock open price
-            Stock_Close = WS.Cells(i, 6).Value
-            'conditional for stock open for percent change
-            If WS.Cells(i, 1).Value <> WS.Cells(i - 1, 1).Value Then
-                Stock_Open = WS.Cells(i, 3).Value
+            'Add amount to total_volume
+            total_volume = total_volume + ws.Cells(i, 7)
 
-                'calculate total Stock Volume
-                Total_Stock_Volume = Total_Stock_Volume + WS.Cells(i, 7)
+            'Conditional to proceed to next ticker
+            If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
 
-                'Create if statement for looping/calculating
-                If Stock_Open = 0 Then
-                    Yearly_Change = 0
-                    Percent_Change = 0
+                'print ticker value in column 9
+                ws.Cells(sum_table, 9).Value = ws.Cells(i, 1).Value
+                'print total volume in column 12
+                ws.Cells(sum_table, 12).Value = total_volume
 
+                'Calculate anual change
+                close_date = ws.Cells(i, 6).Value
+                anual_change = close_date - open_date
+                ws.Cells(sum_table, 10).Value = anual_change
+
+                'Conditional to set positive change as green(col index = 4) and negative change as red(col index = 3) color
+                If anual_change >= 0 Then
+                    ws.Cells(sum_table, 10).Interior.ColorIndex = 4
                 Else
-                    'calculate Yearly change
-                    Yearly_Change = Stock_Close - Stock_Open
-                    'calculate percent change
-                    Percent_Change = (Stock_Close - Stock_Open) / Stock_Open
+                    ws.Cells(sum_table, 10).Interior.ColorIndex = 3
                 End If
-
-                'printing yearly and percent change
-                WS.Range("J" & row).Value = Yearly_Change
-                WS.Range("K" & row).Value = Percent_Change
-                WS.Cells(row, 11).NumberFormat = "0.00%"
-
-                'Conditional to format to highlight positive or negative change.
-                If Yearly_Change >= 0 Then
-                    WS.Cells(row, 10).Interior.ColorIndex = 4
-                Else
-                    WS.Cells(row, 10).Interior.ColorIndex = 3
-                End If
-                If Stock_Open = 0 And Stock_Close = 0 Then
-                    'Indivisible Calculation
-                    Percent_Change = 0
-                    WS.Cells(row, 11).Value = Percent_Change
-                    WS.Cells(row, 11).NumberFormat = "0.00%"
-                ElseIf year_open = 0 Then
-
-                    'Calculation of price increase by dollar amount for stocks beggining at 0.
-                    'Deem "Initial Stock" as percent change.
-                    Dim percent_change_NA As String
-                    percent_change_NA = "Initial Stock"
-                    WS.Cells(row, 11).Value = Percent_Change
-                Else
-                    Percent_Change = year_change / year_open
-                    WS.Cells(rowcount, 11).Value = Percent_Change
-                    WS.Cells(rowcount, 11).NumberFormat = "0.00%"
-                End If
-                'Add 1 to row to move it to the next empty row in the summary table
-                row = row + 1
-                'Reset total stock volume, Stock_Open_Price, Stock_Close_Price, year_change, year
+                
+        'conditional for percent change along with percent format
+        If open_date = 0 And close_date = 0 Then
+            percent_change = 0
+            ws.Cells(sum_table, 11).Value = percent_change
+            ws.Cells(sum_table, 11).NumberFormat = "0.00%"
+        ElseIf open_date = 0 Then
+            'dim category of stock as new stock whose percent change is 0, else perform calculation for percent_change
+            new_stock = "New Stock"
+            ws.Cells(sum_table, 11).Value = new_stock
+        Else
+            percent_change = anual_change / open_date
+            ws.Cells(sum_table, 11).Value = percent_change
+            ws.Cells(sum_table, 11).NumberFormat = "0.00%"
             End If
+            
 
+               'Increment sum_table and reset values
+                sum_table = sum_table + 1
+                total_volume = 0
+                open_date = 0
+                close_date = 0
+                anual_change = 0
+                percent_change = 0
+                
+                'Autofit table columns
+        ws.Columns("I:L").EntireColumn.AutoFit
+        ws.Columns("O:Q").EntireColumn.AutoFit
+                
+             
+            End If
+            
         Next i
 
-        WS.Columns("I:L").EntireColumn.AutoFit
-        WS.Columns("O:Q").EntireColumn.AutoFit
-    Next WS
+    Next ws
+
 End Sub
